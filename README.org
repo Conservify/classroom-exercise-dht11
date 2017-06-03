@@ -1,0 +1,3 @@
+* classroom-exercise-DHT11
+
+  Pretty simple example. Expecting a DHT11 on Pin 5.

@@ -4,6 +4,7 @@
 #include <SPI.h>
 #include <SD.h>
 #include "DHT.h"
+#include "RTClib.h"
 
 #define DHTPIN 5
 
@@ -22,6 +23,9 @@
 // as the current DHT reading algorithm adjusts itself to work on faster procs.
 DHT dht(DHTPIN, DHTTYPE);
 File logFile;
+RTC_PCF8523 rtc;
+
+char daysOfTheWeek[7][12] = {"Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"};
 
 void error(const char *err) {
   Serial.println(err);
@@ -39,6 +43,19 @@ void setup() {
   
   Serial.println("classroom-exercise-dht11");
 
+  if (!rtc.begin()) {
+    error("RTC is unavailable!");
+  }
+
+  if (! rtc.initialized()) {
+    Serial.println("RTC is NOT running!");
+    // following line sets the RTC to the date & time this sketch was compiled
+    rtc.adjust(DateTime(F(__DATE__), F(__TIME__)));
+    // This line sets the RTC with an explicit date & time, for example to set
+    // January 21, 2014 at 3am you would call:
+    // rtc.adjust(DateTime(2014, 1, 21, 3, 0, 0));
+  }
+  
   if (!SD.begin(10)) {
     error("No SD Card");
   }
@@ -74,6 +91,23 @@ void loop() {
   // Compute heat index in Celsius (isFahreheit = false)
   float hic = dht.computeHeatIndex(t, h, false);
 
+  DateTime now = rtc.now();
+
+  Serial.print(now.year(), DEC);
+  Serial.print('/');
+  Serial.print(now.month(), DEC);
+  Serial.print('/');
+  Serial.print(now.day(), DEC);
+  Serial.print(" (");
+  Serial.print(daysOfTheWeek[now.dayOfTheWeek()]);
+  Serial.print(") ");
+  Serial.print(now.hour(), DEC);
+  Serial.print(':');
+  Serial.print(now.minute(), DEC);
+  Serial.print(':');
+  Serial.print(now.second(), DEC);
+  Serial.print(" ");
+
   Serial.print("Humidity: ");
   Serial.print(h);
   Serial.print(" %\t");
@@ -87,6 +121,19 @@ void loop() {
   Serial.print(" *C ");
   Serial.print(hif);
   Serial.println(" *F");
+  
+  logFile.print(now.year(), DEC);
+  logFile.print('/');
+  logFile.print(now.month(), DEC);
+  logFile.print('/');
+  logFile.print(now.day(), DEC);
+  logFile.print(" ");
+  logFile.print(now.hour(), DEC);
+  logFile.print(':');
+  logFile.print(now.minute(), DEC);
+  logFile.print(':');
+  logFile.print(now.second(), DEC);
+  logFile.print(",");
 
   logFile.print(h);
   logFile.print(",");
