@@ -6,8 +6,8 @@
 #include "DHT.h"
 #include "RTClib.h"
 
-#define DHTPIN 5
-
+#define LEDPIN  13
+#define DHTPIN  5
 #define DHTTYPE DHT11
 
 // Connect pin 1 (on the left) of the sensor to +5V
@@ -37,6 +37,9 @@ void error(const char *err) {
 
 void setup() {
   Serial.begin(9600);
+
+  pinMode(LEDPIN, OUTPUT);
+  digitalWrite(LEDPIN, LOW);
 
   while (!Serial && millis() < 5 * 1000) {
   }
@@ -142,4 +145,8 @@ void loop() {
   logFile.print(f);
   logFile.println("");
   logFile.flush();
+
+  digitalWrite(LEDPIN, HIGH);
+  delay(300);
+  digitalWrite(LEDPIN, LOW);
 }
